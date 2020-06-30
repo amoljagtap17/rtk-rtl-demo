@@ -1,15 +1,35 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { store } from './app/store';
-import App from './App';
+import React from 'react'
+import {
+  render,
+  cleanup,
+  fireEvent,
+  waitForDomChange
+} from '@testing-library/react'
+import App from 'App'
+import { GETUSERDATA, NEWUSERDATA } from './mock-server/handlers'
 
-test('renders learn react link', () => {
-  const { getByText } = render(
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
+afterEach(cleanup)
 
-  expect(getByText(/learn/i)).toBeInTheDocument();
-});
+it('renders App component successfully with user data from API', async () => {
+  const { getByText } = render(<App />)
+
+  await waitForDomChange()
+
+  expect(getByText(/React App!/i)).toBeInTheDocument()
+
+  GETUSERDATA.forEach(({ name }) => {
+    expect(getByText(`${name}`)).toBeInTheDocument()
+  })
+})
+
+it('renders App component successfully populating new added user on click of ADD button', async () => {
+  const { getByText, getByTestId } = render(<App />)
+
+  await waitForDomChange()
+
+  fireEvent.click(getByTestId('add-btn'))
+
+  await waitForDomChange()
+
+  expect(getByText(`${NEWUSERDATA.name}`)).toBeInTheDocument()
+})
